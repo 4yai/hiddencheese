@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Connect - AI Receptionist SaaS</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load React and ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Load Babel for JSX compilation in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Set Inter font for modern feel -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 antialiased">
+    <div id="root">
+        <!-- React content will render here -->
+        <div class="flex items-center justify-center h-screen">
+            <svg class="animate-spin -ml-1 mr-3 h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Loading Application...
+        </div>
+    </div>
+
+    <!-- The complete React App using Babel Standalone -->
+    <script type="text/babel" data-type="module">
+        const { useState, useEffect, useCallback, useMemo } = React;
+        const { createRoot } = ReactDOM;
+
+        // --- INLINE LUCIDE ICONS ---
+        const Home = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+        const MessageSquare = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+        const Settings = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.78 1.46a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.78-1.46a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
+        const LogOut = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>;
+        const Phone = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-3.72-3.72A19.79 19.79 0 0 1 3 4.18a2 2 0 0 1 2-2h3.07a2 2 0 0 1 2 1.75 17.52 17.52 0 0 0 .22 2.74 2 2 0 0 1-.48 1.92l-1.35 1.35a1 1 0 0 0-.27 1.25 18.06 18.06 0 0 0 7.07 7.07 1 1 0 0 0 1.25-.27l1.35-1.35a2 2 0 0 1 1.92-.48 17.52 17.52 0 0 0 2.74.22 2 2 0 0 1 1.75 2z"/></svg>;
+        const Mic = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>;
+        const User = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>;
+        const Copy = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+        const Loader2 = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>;
+        const Play = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>;
+        const Pause = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="4" height="16" x="6" y="4"/><rect width="4" height="16" x="14" y="4"/></svg>;
+        const Trash = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>;
+        const Zap = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
+        const Briefcase = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>;
+        const CheckCircle = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.6-8.7"/><path d="M12 2v10"/><path d="m22 4-7 7-3-3"/></svg>;
+        const QrCode = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M11 7h.01"/><path d="M15 7h.01"/><path d="M7 11h.01"/><path d="M11 11h.01"/><path d="M15 11h.01"/><path d="M11 15h.01"/><path d="M15 15h.01"/><path d="M17 17h.01"/><path d="M18 11h.01"/></svg>;
+
+
+        // --- FIREBASE IMPORTS AND CONFIGURATION (MOCK) ---
+        // Global variables provided by the canvas environment.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const apiKey = ""; // API Key for Gemini API calls
+
+        // Mock Firebase state and functions (mimicking the real API)
+        const firebaseApp = window.firebaseApp || { initialized: false };
+        let db = null;
+        let auth = null;
+        let firestoreInitialized = false;
+
+        const initializeApp = () => {
+            if (!firebaseApp.initialized) {
+                firebaseApp.instance = { config: firebaseConfig };
+                firebaseApp.initialized = true;
+            }
+            return firebaseApp.instance;
+        };
+        const getFirestore = (app) => {
+            if (!db) {
+                db = { app, collectionRefs: {}, listeners: [] };
+                firestoreInitialized = true;
+            }
+            return db;
+        };
+        const getAuth = (app) => {
+            if (!auth) {
+                auth = { app, currentUser: null, listeners: [] };
+            }
+            return auth;
+        };
+
+        // Utility to generate a stable, but unique ID based on the input UID
+        const getMockVapiId = (uid) => `as_${uid.replace(/[^0-9a-f]/g, '').substring(0, 16).padStart(16, '0')}`;
+        const getMockPhoneNumber = (uid) => {
+            const num = uid.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0).toString().padStart(10, '0');
+            return `+1 (${num.substring(0, 3)}) ${num.substring(3, 6)}-${num.substring(6, 10)}`;
+        };
+        
+        const signInWithCustomToken = async (authInstance, token) => {
+            return new Promise(resolve => {
+                authInstance.currentUser = { uid: `user-${token.substring(0, 5)}`, email: 'admin@auraconnect.com' };
+                authInstance.listeners.forEach(l => l(authInstance.currentUser));
+                resolve({ user: authInstance.currentUser });
+            });
+        };
+        const signInAnonymously = async (authInstance) => {
+            return new Promise(resolve => {
+                authInstance.currentUser = { uid: `anon-${crypto.randomUUID()}`, isAnonymous: true };
+                authInstance.listeners.forEach(l => l(authInstance.currentUser));
+                resolve({ user: authInstance.currentUser });
+            });
+        };
+        const onAuthStateChanged = (authInstance, callback) => {
+            authInstance.listeners.push(callback);
+            if (authInstance.currentUser) { callback(authInstance.currentUser); }
+            return () => { authInstance.listeners = authInstance.listeners.filter(l => l !== callback); };
+        };
+
+        const collection = (dbInstance, path) => {
+            const fullPath = path.join('/');
+            if (!dbInstance.collectionRefs[fullPath]) { dbInstance.collectionRefs[fullPath] = { docs: {} }; }
+            return { path: fullPath, ref: dbInstance.collectionRefs[fullPath] };
+        };
+        
+        const doc = (dbInstance, path, docId) => {
+            const colRef = collection(dbInstance, path);
+            return { path: [...path, docId].join('/'), docId, colRef };
+        };
+
+        const addDoc = async (colRef, data) => {
+            const id = crypto.randomUUID();
+            colRef.ref.docs[id] = { id, data: { ...data, timestamp: new Date().toISOString() } };
+            db.listeners.forEach(l => l());
+            return { id };
+        };
+
+        const setDoc = async (docRef, data) => {
+            const collectionPath = docRef.colRef.path;
+            if (!db.collectionRefs[collectionPath].docs[docRef.docId]) {
+                 db.collectionRefs[collectionPath].docs[docRef.docId] = { id: docRef.docId, data: {} };
+            }
+            db.collectionRefs[collectionPath].docs[docRef.docId].data = { ...data, timestamp: new Date().toISOString() };
+            db.listeners.forEach(l => l());
+            return { id: docRef.docId };
+        };
+
+        const getDoc = async (docRef) => {
+            const collectionPath = docRef.colRef.path;
+            const docData = db.collectionRefs[collectionPath]?.docs[docRef.docId];
+            if (docData) {
+                return { exists: true, data: () => docData.data };
+            }
+            return { exists: false, data: () => null };
+        };
+
+
+        const onSnapshot = (colRef, callback) => {
+            if (!db.listeners) db.listeners = [];
+            const listener = () => {
+                if (!colRef.ref || !colRef.ref.docs) { return callback({ docs: [] }); }
+                const docs = Object.entries(colRef.ref.docs).map(([id, docData]) => ({
+                    id, ...docData.data, timestamp: docData.data.timestamp,
+                })).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                callback({ docs });
+            };
+            db.listeners.push(listener);
+            listener();
+            return () => { db.listeners = db.listeners.filter(l => l !== listener); };
+        };
+        
+        const deleteDoc = async (docRef) => {
+            const pathParts = docRef.path.split('/');
+            const docId = pathParts.pop();
+            const collectionPath = pathParts.join('/');
+            if (db.collectionRefs[collectionPath] && db.collectionRefs[collectionPath].docs[docId]) {
+                delete db.collectionRefs[collectionPath].docs[docId];
+                db.listeners.forEach(l => l());
+            }
+        };
+
+        const getCollectionPath = (collectionName) => ['artifacts', appId, 'public', 'data', collectionName];
+
+        // --- GEMINI API CALL UTILITIES ---
+
+        const runWithExponentialBackoff = async (apiCall, maxRetries = 5) => {
+            for (let attempt = 0; attempt < maxRetries; attempt++) {
+                try {
+                    return await apiCall();
+                } catch (error) {
+                    if (attempt === maxRetries - 1) throw error;
+                    const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        };
+
+        const generateAiTranscript = async (businessQuery) => {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const systemPrompt = `You are an AI receptionist named Aura for the user's suggested business. Write a realistic, concise transcript of a 3-turn call (Caller -> AI -> Caller -> AI) where the AI successfully handles a common inquiry for that business. Use bold markdown for the speaker names (e.g., **Caller:**). Do not include any pre-amble or post-amble text.`;
+            const userQuery = `Simulate a call for a business described as: "${businessQuery}".`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const apiCall = async () => {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error(`API call failed with status: ${response.status}`);
+                return response.json();
+            };
+
+            // Using the real API call here is preferred, but for standalone stability, we'll revert to mock
+            // const result = await runWithExponentialBackoff(apiCall); 
+
+            // Mocking the result for standalone stability:
+            await new Promise(resolve => setTimeout(resolve, 2500)); 
+            let mockResult;
+
+            if (businessQuery.toLowerCase().includes('dentist')) {
+                mockResult = "**Caller:** Hi, I need to reschedule my cleaning appointment next Tuesday.\n**AI (Aura):** Certainly, I can help with that! Is there a specific day you'd like to move it to?\n**Caller:** How about Friday morning around 9 AM?\n**AI (Aura):** Let me check... Yes, Friday at 9:15 AM is open. I've updated your appointment. Is there anything else I can assist you with?";
+            } else if (businessQuery.toLowerCase().includes('plumber')) {
+                mockResult = "**Caller:** I have a burst pipe in my basement, it's an emergency!\n**AI (Aura):** Oh dear, I understand! I'm alerting our emergency on-call technician immediately. What is your address and current contact number?\n**Caller:** It's 123 Maple Lane, my number is 555-4444.\n**AI (Aura):** Thank you. Our technician, Mark, will call you in five minutes and be there within the hour. We're dispatching now.";
+            } else {
+                 mockResult = `**Caller:** I'm calling about the hours for the ${businessQuery} business.\n**AI (Aura):** Thank you for calling. We are open from 9 AM to 5 PM, Monday through Friday. How else can I assist you today?\n**Caller:** Do you have any weekend hours?\n**AI (Aura):** We are closed on weekends, but you can leave a voicemail or browse our website for support.`;
+            }
+            return { text: mockResult, sources: [] };
+        };
+
+
+        // --- FAKE DATA GENERATOR FOR DEMO ---
+        const generateFakeCallLog = (userId) => {
+            const callId = crypto.randomUUID().substring(0, 8);
+            const names = ['John Smith', 'Jane Doe', 'Acme Corp', 'Global Dynamics'];
+            const phone = `+1 (${Math.floor(Math.random() * 900) + 100}) ${Math.floor(Math.random() * 900) + 1000}-${Math.floor(Math.random() * 9000) + 1000}`;
+            const duration = Math.floor(Math.random() * 120) + 15;
+            const status = ['Completed', 'Voicemail', 'Missed'][Math.floor(Math.random() * 3)];
+            const date = new Date(Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)).toISOString();
+
+            const transcript = status === 'Completed'
+                ? `**Caller:** Hi, I need to book an appointment with Dr. Stevens this week. \n**AI:** Thank you for calling! Dr. Stevens is available Friday at 2 PM. Does that work for you? \n**Caller:** Yes, please book it. \n**AI:** Wonderful, you are all set. Have a great day!`
+                : status === 'Voicemail'
+                    ? `**Voicemail:** Hi, this is Bob from XYZ, please call me back regarding my payment. (15s)`
+                    : 'Call was missed or dropped early.';
+
+            return {
+                callerName: names[Math.floor(Math.random() * names.length)],
+                callerNumber: phone,
+                duration: duration,
+                status: status,
+                transcript: transcript,
+                recordingUrl: status === 'Completed' ? 'https://vapi.ai/mock-recording-link' : '',
+                timestamp: date,
+                assistantId: userId,
+                callId: callId,
+            };
+        };
+
+        // --- CONSTANTS AND UTILS ---
+        const Pages = {
+            LANDING: 'Landing',
+            AUTH: 'Auth',
+            DASHBOARD: 'Dashboard',
+            CALLS: 'Calls',
+            CONFIG: 'Configuration',
+        };
+
+        const formatDuration = (seconds) => {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        };
+
+        // --- COMPONENTS ---
+
+        // 1. Live AI Chat Simulator (The "Cool Feature")
+        const AuraSimulator = () => {
+            const [query, setQuery] = useState('a local dentist office');
+            const [transcript, setTranscript] = useState('');
+            const [isLoading, setIsLoading] = useState(false);
+            const [isReady, setIsReady] = useState(false);
+
+            // Mock generation function
+            const mockGenerate = async (q) => {
+                if (!q) return;
+                setIsLoading(true);
+                setTranscript('Generating realistic call transcript...');
+                
+                try {
+                    const { text } = await generateAiTranscript(q);
+                    setTranscript(text);
+                } catch (error) {
+                    console.error("Simulation error:", error);
+                    setTranscript("An error occurred during simulation. Check console.");
+                } finally {
+                    setIsLoading(false);
+                    setIsReady(true);
+                }
+            };
+
+            const handleKeyDown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    mockGenerate(query);
+                }
+            };
+
+            return (
+                <div className="bg-white p-8 rounded-3xl shadow-2xl space-y-6 max-w-2xl mx-auto border border-indigo-100">
+                    <h3 className="text-xl font-bold text-gray-800 flex items-center">
+                        <Zap className="w-6 h-6 mr-2 text-indigo-500" />
+                        Live AI Call Simulation
+                    </h3>
+                    <p className="text-gray-500 text-sm">See Aura in action. Describe any business below and watch the instant transcript.</p>
+                    
+                    <div className="flex space-x-2">
+                        <input
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            className="flex-grow p-3 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+                            placeholder="e.g., a local dentist office, a non-profit organization"
+                            disabled={isLoading}
+                        />
+                        <button
+                            onClick={() => mockGenerate(query)}
+                            disabled={isLoading}
+                            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+                        >
+                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Simulate'}
+                        </button>
+                    </div>
+
+                    <div className={`bg-gray-50 p-4 rounded-xl border border-gray-200 min-h-32 transition-all ${isReady ? 'mt-4' : ''}`}>
+                        {isLoading ? (
+                            <div className="flex items-center text-indigo-600">
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                {transcript}
+                            </div>
+                        ) : isReady ? (
+                            <pre className="whitespace-pre-wrap text-sm text-gray-800">
+                                {transcript}
+                            </pre>
+                        ) : (
+                            <p className="text-gray-400 italic">Enter a business type and click 'Simulate' above.</p>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // 2. Landing Page View
+        const LandingView = ({ setPage }) => (
+            <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
+                {/* Header/Nav */}
+                <header className="fixed top-0 left-0 right-0 p-4 bg-gray-900/90 backdrop-blur-sm z-10 shadow-lg">
+                    <div className="flex justify-between items-center max-w-6xl mx-auto">
+                        <h1 className="text-3xl font-extrabold tracking-tight text-indigo-400">Aura Connect</h1>
+                        <div className="space-x-4">
+                            <button
+                                onClick={() => setPage(Pages.AUTH)}
+                                className="px-5 py-2 text-indigo-300 font-medium rounded-xl hover:text-white transition-colors"
+                            >
+                                Login
+                            </button>
+                            <button
+                                onClick={() => setPage(Pages.AUTH)}
+                                className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:bg-indigo-700 transition-transform transform hover:scale-[1.05]"
+                            >
+                                Get Started
+                            </button>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Hero Section */}
+                <section className="text-center py-20 pt-32 max-w-4xl mx-auto">
+                    <span className="inline-block bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full uppercase mb-4">
+                        Powered by Vapi & Gemini
+                    </span>
+                    <h2 className="text-6xl font-extrabold tracking-tight mb-4 leading-tight">
+                        The AI Receptionist That Converts Calls.
+                    </h2>
+                    <p className="text-xl text-indigo-200 mb-10">
+                        Aura Connect manages 100% of your incoming calls, qualifies leads, and books appointments, all using a human-like voice.
+                    </p>
+                    <button
+                        onClick={() => setPage(Pages.AUTH)}
+                        className="px-8 py-4 bg-indigo-600 text-white text-lg font-bold rounded-xl shadow-2xl shadow-indigo-500/50 hover:bg-indigo-700 transition-all transform hover:-translate-y-1"
+                    >
+                        Start Your Free 7-Day Trial
+                    </button>
+                </section>
+
+                {/* Feature Showcase (AI Simulator) */}
+                <section className="w-full py-16 px-4 bg-gray-50">
+                    <div className="max-w-6xl mx-auto">
+                        <AuraSimulator />
+                    </div>
+                </section>
+                
+                {/* Footer */}
+                <footer className="w-full p-6 text-center text-gray-500 text-sm border-t border-gray-800 mt-auto">
+                    &copy; 2025 Aura Connect. All rights reserved.
+                </footer>
+            </div>
+        );
+
+        // 3. Auth View (Handles Login and Sign Up)
+        const AuthView = ({ onFakeLogin, isLoading }) => {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [isRegistering, setIsRegistering] = useState(false);
+            const [error, setError] = useState(null);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                setError(null);
+                
+                if (email !== 'admin@auraconnect.com' || password !== 'password123') {
+                    return setError(isRegistering ? "Registration simulation failed. Using mock credentials." : "Mock Login Failed. Please use admin@auraconnect.com / password123.");
+                }
+
+                // Simulate successful action and log in
+                onFakeLogin();
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+                    <div className="w-full max-w-md">
+                        <div className="text-center mb-8">
+                            <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight">Aura Connect</h1>
+                            <p className="mt-2 text-gray-500">
+                                {isRegistering ? 'Create your free 7-day trial account' : 'Log in to your dashboard'}
+                            </p>
+                        </div>
+
+                        <div className="bg-white p-8 rounded-3xl shadow-2xl space-y-6 border border-indigo-100">
+                            <h2 className="text-2xl font-bold text-gray-800 text-center">
+                                {isRegistering ? 'Sign Up' : 'Sign In'}
+                            </h2>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Email</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+                                        placeholder="admin@auraconnect.com"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Password</label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+                                        placeholder="password123"
+                                        required
+                                    />
+                                </div>
+                                {error && <p className="text-sm text-red-600 p-2 bg-red-50 rounded-lg">{error}</p>}
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors flex items-center justify-center disabled:opacity-50"
+                                >
+                                    {isLoading ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : isRegistering ? 'Create Account' : 'Sign In'}
+                                </button>
+                            </form>
+                            <div className="text-center pt-2">
+                                <button
+                                    onClick={() => { setIsRegistering(!isRegistering); setError(null); }}
+                                    className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors"
+                                >
+                                    {isRegistering ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+                                </button>
+                            </div>
+                            <p className="text-xs text-center text-gray-400 pt-2 border-t mt-4">
+                                *Use **admin@auraconnect.com** / **password123** for access.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. Navigation Sidebar
+        const Sidebar = ({ currentPage, setPage, onLogout }) => {
+            const navItems = [
+                { name: Pages.DASHBOARD, icon: Home },
+                { name: Pages.CALLS, icon: MessageSquare },
+                { name: Pages.CONFIG, icon: Settings },
+            ];
+
+            return (
+                <div className="flex flex-col w-full h-full bg-gray-900 text-white p-4 shadow-2xl">
+                    <h1 className="text-2xl font-extrabold tracking-tight text-indigo-400 mb-8 border-b border-gray-700 pb-4">
+                        Aura Connect
+                    </h1>
+                    <nav className="flex-grow space-y-2">
+                        {navItems.map((item) => (
+                            <button
+                                key={item.name}
+                                onClick={() => setPage(item.name)}
+                                className={`flex items-center w-full p-3 rounded-xl transition-all duration-200 text-left ${
+                                    currentPage === item.name
+                                        ? 'bg-indigo-600 font-semibold text-white shadow-lg'
+                                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                                }`}
+                            >
+                                <item.icon className="w-5 h-5 mr-3" />
+                                {item.name === Pages.DASHBOARD ? 'Overview' : item.name}
+                            </button>
+                        ))}
+                    </nav>
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center w-full p-3 rounded-xl mt-4 text-left text-red-400 hover:bg-gray-800 transition-all duration-200"
+                    >
+                        <LogOut className="w-5 h-5 mr-3" />
+                        Logout
+                    </button>
+                </div>
+            );
+        };
+        
+        // 5. Dashboard Sub-Components
+        const CallLogTable = ({ logs, userId, dbInstance }) => {
+            const [expandedCallId, setExpandedCallId] = useState(null);
+            const [audioStatus, setAudioStatus] = useState({});
+
+            const toggleExpand = (id) => {
+                setExpandedCallId(id === expandedCallId ? null : id);
+                if (id === expandedCallId) setAudioStatus({});
+            };
+        
+            const toggleAudio = (id) => {
+                if (audioStatus[id] === 'playing') {
+                    setAudioStatus({ [id]: 'paused' });
+                } else {
+                    setAudioStatus({ [id]: 'playing' });
+                    setTimeout(() => { setAudioStatus({ [id]: 'stopped' }); }, 5000);
+                }
+            };
+        
+            const deleteDocRef = (id) => {
+                const path = getCollectionPath('callLogs');
+                path.push(id);
+                return { path: path.join('/') }; // Mock doc reference
+            };
+
+            const deleteLog = async (id) => {
+                if (!dbInstance || !userId) return console.error("Database not ready.");
+                try {
+                    // This creates a temporary object that mimics a document reference for the mock deleteDoc
+                    await deleteDoc({ path: [...getCollectionPath('callLogs'), id].join('/') });
+                } catch (error) {
+                    console.error("Error deleting document:", error);
+                }
+            };
+        
+            const columns = [
+                { name: 'Caller', key: 'callerName' },
+                { name: 'Number', key: 'callerNumber' },
+                { name: 'Duration', key: 'duration', formatter: formatDuration },
+                { name: 'Date', key: 'timestamp', formatter: (t) => new Date(t).toLocaleDateString() },
+                { name: 'Status', key: 'status' },
+            ];
+        
+            return (
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden p-6 mt-6">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Call Logs & Transcripts</h2>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    {columns.map(col => (
+                                        <th
+                                            key={col.name}
+                                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            {col.name}
+                                        </th>
+                                    ))}
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {logs.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={columns.length + 1} className="px-6 py-4 text-center text-gray-500 italic">No calls recorded yet.</td>
+                                    </tr>
+                                ) : (
+                                    logs.map((log) => (
+                                        <React.Fragment key={log.id}>
+                                            <tr className="hover:bg-indigo-50 transition-colors cursor-pointer" onClick={() => toggleExpand(log.id)}>
+                                                {columns.map(col => (
+                                                    <td key={col.key} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {col.formatter ? col.formatter(log[col.key]) : log[col.key]}
+                                                    </td>
+                                                ))}
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    {log.recordingUrl && log.status === 'Completed' ? (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); toggleAudio(log.id); }}
+                                                            className={`p-2 rounded-full mr-2 transition-colors ${
+                                                                audioStatus[log.id] === 'playing' ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                                                            }`}
+                                                            title={audioStatus[log.id] === 'playing' ? 'Pause Recording' : 'Listen to Recording'}
+                                                        >
+                                                            {audioStatus[log.id] === 'playing' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                                                        </button>
+                                                    ) : (
+                                                        <button className="p-2 rounded-full mr-2 bg-gray-200 text-gray-500 cursor-not-allowed" title="No recording available" disabled>
+                                                            <Mic className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); deleteLog(log.id); }}
+                                                        className="p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
+                                                        title="Delete Log"
+                                                    >
+                                                        <Trash className="w-4 h-4" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {expandedCallId === log.id && (
+                                                <tr className="bg-gray-100">
+                                                    <td colSpan={columns.length + 1} className="p-6">
+                                                        <div className="font-semibold text-gray-700 mb-2 flex items-center">
+                                                            <MessageSquare className="w-5 h-5 mr-2 text-indigo-600" />
+                                                            Full Transcript (Aura AI):
+                                                        </div>
+                                                        <div className="bg-white p-4 rounded-xl text-sm border border-gray-200 max-h-48 overflow-y-auto whitespace-pre-wrap">
+                                                            {log.transcript}
+                                                        </div>
+                                                        {audioStatus[log.id] === 'playing' && (
+                                                            <div className="mt-3 text-sm text-green-600 font-medium animate-pulse">
+                                                                [MOCK AUDIO PLAYING] Simulated playback for 5 seconds...
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        };
+
+        const DashboardOverview = ({ logs, clientConfig }) => {
+            const totalCalls = logs.length;
+            const completedCalls = logs.filter(l => l.status === 'Completed').length;
+            const totalDuration = logs.reduce((sum, l) => sum + (l.duration || 0), 0);
+            const avgDuration = totalCalls > 0 ? totalDuration / totalCalls : 0;
+        
+            const stats = [
+                { title: 'Total Calls', value: totalCalls, icon: Phone, color: 'text-indigo-500', bg: 'bg-indigo-100' },
+                { title: 'Completed by AI', value: completedCalls, icon: Mic, color: 'text-green-500', bg: 'bg-green-100' },
+                { title: 'Avg. Duration', value: formatDuration(Math.round(avgDuration)), icon: MessageSquare, color: 'text-yellow-500', bg: 'bg-yellow-100' },
+                { title: 'Total Talk Time', value: formatDuration(totalDuration), icon: Copy, color: 'text-purple-500', bg: 'bg-purple-100' },
+            ];
+
+            const phoneNumber = clientConfig?.phoneNumber || 'Loading...';
+        
+            return (
+                <div className="p-8">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Overview</h1>
+                    <p className="text-gray-500 mb-8">Your AI receptionist performance snapshot.</p>
+        
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        {stats.map(stat => (
+                            <div key={stat.title} className="bg-white rounded-2xl shadow-lg p-6 flex items-center transition-transform hover:scale-[1.02] duration-300">
+                                <div className={`p-3 rounded-full ${stat.bg} mr-4`}>
+                                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">{stat.title}</p>
+                                    <p className="text-2xl font-extrabold text-gray-900">{stat.value}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+        
+                    <div className="bg-indigo-600 p-6 rounded-2xl shadow-xl text-white flex items-center justify-between">
+                        <div>
+                            <h2 className="text-xl font-semibold mb-2 flex items-center"><Phone className="w-5 h-5 mr-2"/> Your Dedicated AI Number</h2>
+                            <p className="text-2xl font-bold tracking-wider">{phoneNumber}</p>
+                        </div>
+                        <button className="px-4 py-2 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-indigo-50 transition-colors">
+                            <QrCode className="w-5 h-5 mr-2 inline-block"/>
+                            Call Me Now
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+        
+        const CallsView = ({ logs, userId, dbInstance, onAddFakeLog }) => (
+            <div className="p-8">
+                <div className="flex justify-between items-center mb-6">
+                    <h1 className="text-3xl font-bold text-gray-800">Call Log</h1>
+                    <button
+                        onClick={onAddFakeLog}
+                        className="flex items-center px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors"
+                    >
+                        <Phone className="w-5 h-5 mr-2" />
+                        Simulate New Call
+                    </button>
+                </div>
+                <CallLogTable logs={logs} userId={userId} dbInstance={dbInstance} />
+            </div>
+        );
+
+        const ConfigurationView = ({ userId, dbInstance }) => {
+            const [persona, setPersona] = useState("Professional, friendly, and efficient. AI is named 'Aura'.");
+            const [clientConfig, setClientConfig] = useState(null);
+            const [loading, setLoading] = useState(true);
+
+            // Fetch client configuration
+            useEffect(() => {
+                if (!dbInstance || !userId) return;
+
+                const configDocRef = doc(dbInstance, getCollectionPath('client_configs'), `client_${userId}`);
+                
+                // Mock onSnapshot for a single document listener for real-time updates
+                const mockOnSnapshot = (ref, callback) => {
+                    const listener = async () => {
+                         const snapshot = await getDoc(ref);
+                         if (snapshot.exists) {
+                            callback(snapshot.data());
+                         } else {
+                            callback(null);
+                         }
+                         setLoading(false);
+                    };
+
+                    // Attaching listener to global Firestore event simulation
+                    dbInstance.listeners.push(listener);
+                    listener(); // Initial fetch
+
+                    return () => {
+                        dbInstance.listeners = dbInstance.listeners.filter(l => l !== listener);
+                    };
+                };
+
+                const unsubscribe = mockOnSnapshot(configDocRef, (configData) => {
+                    setClientConfig(configData);
+                });
+
+                return () => unsubscribe();
+
+            }, [userId, dbInstance]);
+
+            const handleSave = (e) => {
+                e.preventDefault();
+                window.alert("Configuration saved! (Mock Action)");
+            };
+
+            const CardDetail = ({ icon: Icon, title, value }) => (
+                <div className="flex items-center p-4 bg-gray-50 rounded-xl border border-gray-200">
+                    <Icon className="w-6 h-6 mr-4 text-indigo-600 flex-shrink-0" />
+                    <div>
+                        <p className="text-sm font-medium text-gray-500">{title}</p>
+                        <p className="text-lg font-semibold text-gray-900 break-all">{loading ? 'Loading...' : value}</p>
+                    </div>
+                </div>
+            );
+        
+            return (
+                <div className="p-8 max-w-4xl">
+                    <h1 className="text-3xl font-bold text-gray-800 mb-6">AI Configuration & Vapi Setup</h1>
+                    <p className="text-gray-500 mb-8">Define the voice, personality, and check your unique Vapi deployment details below.</p>
+        
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <CardDetail 
+                            icon={Phone} 
+                            title="Your Dedicated Phone Number" 
+                            value={clientConfig?.phoneNumber || 'N/A'}
+                        />
+                        <CardDetail 
+                            icon={CheckCircle} 
+                            title="Vapi Assistant ID" 
+                            value={clientConfig?.vapiAssistantId || 'N/A'}
+                        />
+                    </div>
+
+                    <form onSubmit={handleSave} className="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+                        <div>
+                            <label htmlFor="persona" className="block text-sm font-medium text-gray-700 flex items-center mb-2">
+                                <User className="w-4 h-4 mr-2 text-indigo-600" />
+                                AI Persona Description
+                            </label>
+                            <textarea
+                                id="persona"
+                                rows="4"
+                                value={persona}
+                                onChange={(e) => setPersona(e.target.value)}
+                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 resize-none transition-shadow"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full py-3 mt-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors transform hover:scale-[1.01]"
+                        >
+                            Save Configuration
+                        </button>
+                    </form>
+                </div>
+            );
+        };
+
+        // 6. Main App Component
+        const App = () => {
+            const [currentPage, setCurrentPage] = useState(Pages.LANDING);
+            const [isAuthReady, setIsAuthReady] = useState(false);
+            const [userId, setUserId] = useState(null);
+            const [callLogs, setCallLogs] = useState([]);
+            const [clientConfig, setClientConfig] = useState(null);
+        
+            // --- FIREBASE INITIALIZATION & AUTH ---
+            useEffect(() => {
+                const app = initializeApp();
+                const firestore = getFirestore(app);
+                const authInstance = getAuth(app);
+        
+                const initializeAuth = async () => {
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(authInstance, initialAuthToken);
+                        } else {
+                            await signInAnonymously(authInstance);
+                        }
+                    } catch (error) {
+                        console.error("Firebase Auth Error:", error);
+                    }
+                };
+        
+                const unsubscribeAuth = onAuthStateChanged(authInstance, (user) => {
+                    if (user) {
+                        setUserId(user.uid);
+                        setCurrentPage(Pages.DASHBOARD);
+                    } else {
+                        setUserId(null);
+                        setCurrentPage(Pages.LANDING); 
+                    }
+                    setIsAuthReady(true);
+                });
+        
+                initializeAuth();
+                return () => unsubscribeAuth();
+            }, []);
+        
+            // --- FIRESTORE DATA LISTENERS ---
+
+            // 1. Call Logs Listener
+            useEffect(() => {
+                let unsubscribe = () => {};
+        
+                if (firestoreInitialized && userId) {
+                    try {
+                        // In a real app, this would query by the client's vapiAssistantId for security/filtering.
+                        // Here, we rely on the mock data creator using the userId.
+                        const callLogsCollectionRef = collection(db, getCollectionPath('callLogs'));
+                        unsubscribe = onSnapshot(callLogsCollectionRef, ({ docs }) => {
+                            // Filter logs to only show those matching the current user's ID
+                            const userLogs = docs.filter(log => log.assistantId === userId);
+                            setCallLogs(userLogs);
+                        });
+                    } catch (error) {
+                        console.error("Failed to set up Firestore listener:", error);
+                    }
+                } else {
+                    setCallLogs([]);
+                }
+        
+                return () => unsubscribe();
+            }, [isAuthReady, userId]);
+
+            // 2. Client Config Listener (Dashboard Needs it)
+            useEffect(() => {
+                let unsubscribe = () => {};
+                if (firestoreInitialized && userId) {
+                    const configDocRef = doc(db, getCollectionPath('client_configs'), `client_${userId}`);
+                
+                    const mockOnSnapshot = (ref, callback) => {
+                        const listener = async () => {
+                            const snapshot = await getDoc(ref);
+                            if (snapshot.exists) {
+                                callback(snapshot.data());
+                            } else {
+                                callback(null);
+                            }
+                        };
+                        db.listeners.push(listener);
+                        listener(); 
+                        return () => { db.listeners = db.listeners.filter(l => l !== listener); };
+                    };
+
+                    unsubscribe = mockOnSnapshot(configDocRef, (configData) => {
+                        setClientConfig(configData);
+                    });
+                } else {
+                    setClientConfig(null);
+                }
+                return () => unsubscribe();
+            }, [userId]);
+
+
+            // --- DATA CREATION AND AUTH HANDLERS ---
+        
+            const ensureClientConfigExists = useCallback(async (uid) => {
+                if (!db || !uid) return;
+                const configDocRef = doc(db, getCollectionPath('client_configs'), `client_${uid}`);
+                
+                try {
+                    const snapshot = await getDoc(configDocRef);
+                    if (!snapshot.exists) {
+                        // Create a mock client config on first login
+                        const newConfig = {
+                            userId: uid,
+                            vapiAssistantId: getMockVapiId(uid),
+                            phoneNumber: getMockPhoneNumber(uid),
+                            integrationStatus: 'Active',
+                        };
+                        await setDoc(configDocRef, newConfig);
+                        console.log("Mock client config created.");
+                        // Also initialize 5 fake logs
+                        for (let i = 0; i < 5; i++) {
+                            const newLog = generateFakeCallLog(uid);
+                            const callLogsCollectionRef = collection(db, getCollectionPath('callLogs'));
+                            await addDoc(callLogsCollectionRef, newLog);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error ensuring client config:", error);
+                }
+            }, []);
+
+
+            const handleFakeLogin = () => {
+                if (!auth.currentUser) {
+                     auth.currentUser = { uid: 'mock-admin-123', email: 'admin@auraconnect.com' };
+                     setUserId('mock-admin-123');
+                }
+                setCurrentPage(Pages.DASHBOARD);
+            };
+
+            // This effect handles post-login setup (creating data if missing)
+            useEffect(() => {
+                if (userId && firestoreInitialized) {
+                    ensureClientConfigExists(userId);
+                }
+            }, [userId, ensureClientConfigExists]);
+        
+            const handleLogout = () => {
+                setUserId(null);
+                setCurrentPage(Pages.LANDING);
+            };
+        
+            const handleAddFakeLog = useCallback(async () => {
+                if (!db || !userId) return window.alert("System not ready.");
+                try {
+                    const newLog = generateFakeCallLog(userId);
+                    const callLogsCollectionRef = collection(db, getCollectionPath('callLogs'));
+                    await addDoc(callLogsCollectionRef, newLog);
+                } catch (error) {
+                    console.error("Error adding document:", error);
+                }
+            }, [userId]);
+        
+            const renderContent = useMemo(() => {
+                if (!isAuthReady) {
+                    return (
+                        <div className="flex items-center justify-center min-h-screen">
+                            <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+                        </div>
+                    );
+                }
+        
+                switch (currentPage) {
+                    case Pages.LANDING:
+                        return <LandingView setPage={setCurrentPage} />;
+                    case Pages.AUTH:
+                        return <AuthView onFakeLogin={handleFakeLogin} isLoading={!isAuthReady} />;
+                    case Pages.DASHBOARD:
+                    case Pages.CALLS:
+                    case Pages.CONFIG:
+                        const commonProps = { logs: callLogs, userId, dbInstance: db, clientConfig };
+                        if (!userId) return <AuthView onFakeLogin={handleFakeLogin} isLoading={!isAuthReady} />; 
+
+                        switch (currentPage) {
+                            case Pages.DASHBOARD:
+                                return <DashboardOverview {...commonProps} />;
+                            case Pages.CALLS:
+                                return <CallsView {...commonProps} onAddFakeLog={handleAddFakeLog} />;
+                            case Pages.CONFIG:
+                                // Configuration view needs direct access to db instance for the internal fetch
+                                return <ConfigurationView userId={userId} dbInstance={db} />;
+                            default:
+                                return <DashboardOverview {...commonProps} />;
+                        }
+                    default:
+                        return <LandingView setPage={setCurrentPage} />;
+                }
+            }, [isAuthReady, currentPage, userId, callLogs, handleAddFakeLog, handleFakeLogin, clientConfig]);
+        
+            if (currentPage === Pages.LANDING || currentPage === Pages.AUTH || !userId) {
+                return renderContent;
+            }
+        
+            return (
+                <div className="flex h-screen bg-gray-50 font-sans">
+                    <div className="w-64 flex-shrink-0">
+                        <Sidebar currentPage={currentPage} setPage={setCurrentPage} onLogout={handleLogout} />
+                    </div>
+                    <main className="flex-grow overflow-y-auto">
+                        {renderContent}
+                        <div className="p-4 text-xs text-center text-gray-400 border-t mt-8">
+                            User ID: {userId} | App ID: {appId}
+                        </div>
+                    </main>
+                </div>
+            );
+        }
+
+        // Render the App component
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>
