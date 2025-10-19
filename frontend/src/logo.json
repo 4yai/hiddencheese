@@ -1,0 +1,27 @@
+{
+  "brandName": "LinePilot",
+  "svg": {
+    "viewBox": "0 0 256 256",
+    "paths": [
+      {
+        "d": "M24 128c0-57.35 46.65-104 104-104s104 46.65 104 104-46.65 104-104 104S24 185.35 24 128z",
+        "opacity": 0.08
+      },
+      {
+        "d": "M64 160l48-96 32 64 16-32 32 64",
+        "stroke": "currentColor",
+        "strokeWidth": 14,
+        "fill": "none",
+        "strokeLinecap": "round",
+        "strokeLinejoin": "round"
+      },
+      {
+        "d": "M60 196h136",
+        "stroke": "currentColor",
+        "strokeWidth": 10,
+        "fill": "none",
+        "strokeLinecap": "round"
+      }
+    ]
+  }
+}
